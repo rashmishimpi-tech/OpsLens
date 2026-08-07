@@ -50,16 +50,19 @@ It:
 
 ## High-Level Architecture
 
+```text
 User
-↓
+  |
+  v
 FastAPI
-↓
+  |
+  v
 Agent
-├── MLflow
-├── Airflow
-├── PostgreSQL
-├── Vector Search
-└── Runbooks
+  |-- MLflow
+  |-- Airflow
+  |-- PostgreSQL
+  |-- Vector Search
+  `-- Runbooks
 
 ---
 
@@ -74,8 +77,7 @@ Agent
 - MLflow
 - Apache Airflow
 
----
-
+```markdown
 ## Status
 
-🚧 Under Development
+Under Development

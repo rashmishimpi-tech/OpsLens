@@ -1,0 +1,32 @@
+[project]
+name = "opslens"
+version = "0.1.0"
+description = "Internal ML platform for operational intelligence and agent-driven analysis"
+requires-python = ">=3.12,<3.13"
+
+[dependency-groups]
+dev = [
+    "mypy>=2.3.0",
+    "pytest>=9.1.1",
+    "ruff>=0.16.2",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+exclude = [".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+pretty = true
+show_error_codes = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]

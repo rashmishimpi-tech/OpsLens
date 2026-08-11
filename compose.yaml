@@ -23,5 +23,17 @@ services:
       retries: 10
       start_period: 10s
 
+  api:
+    build:
+      context: .
+    container_name: opslens-api
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:${POSTGRES_PORT}/${POSTGRES_DB}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres_data:

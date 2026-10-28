@@ -9,11 +9,18 @@ from opslens.tools.mlflow import get_run_metrics
 from opslens.tools.mlflow_schema import get_mlflow_schema
 from opslens.tools.mlflow_sql import run_mlflow_query
 from opslens.tools.sql import run_sql_query
+from opslens.tools.airflow import (
+    get_failed_dag_runs,
+    get_failed_task_instances,
+)
+
 
 tools = [
     get_run_metrics,
     run_sql_query,
     run_mlflow_query,
+    get_failed_dag_runs,
+    get_failed_task_instances,
 ]
 
 MAX_SQL_RETRIES = 1
@@ -145,6 +152,44 @@ def call_model(state: AgentState) -> dict[str, object]:
     metrics for one explicitly named run
     - use run_mlflow_query for other MLflow analytical questions
     - use run_sql_query only for the OpsLens application database
+    
+    Airflow investigation rules:
+    - use Airflow tools when the user asks about DAG executions,
+      task failures, or workflow failures
+    - use get_failed_dag_runs to find recent failed executions
+      of a specific Airflow DAG
+    - use get_failed_task_instances to identify failed tasks
+      within a specific DAG run
+    - never query Airflow tables using run_sql_query
+    - never query Airflow tables using run_mlflow_query
+    - never use MLflow tools to investigate Airflow DAG failures
+    - use the exact dag_id provided by the user
+    - never invent a dag_id or run_id
+    - if the user provides a dag_id but no run_id, first call
+      get_failed_dag_runs to retrieve failed runs
+    - when investigating a specific failed run, use its actual
+      run_id to call get_failed_task_instances
+    - if multiple failed runs are returned and the user has not
+      specified which run to investigate, use the most recent
+      failed run and clearly identify it in the response
+    - distinguish DAG-level failure from task-level failure
+    - never claim a root cause based only on task state
+    - task metadata identifies which task failed, but does not
+      necessarily explain why it failed
+    - do not invent Airflow exception messages or task logs
+    - if Airflow tools return no matching data, report that
+      no matching records were found
+
+    Cross-system investigation rules:
+    - Airflow DAG failures and MLflow run failures are
+      different operational events
+    - do not assume an Airflow DAG failure caused an MLflow
+      failure without supporting evidence
+    - do not assume two executions are related simply because
+      their timestamps are similar
+    - only correlate Airflow and MLflow data when there is
+      evidence linking the executions
+
     """
     response = model.invoke(
         [
